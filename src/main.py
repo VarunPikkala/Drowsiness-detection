@@ -53,12 +53,10 @@ if not cap.isOpened():
     raise RuntimeError("Could not open webcam.")
 
 
-# Camera resolution
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
-# Target FPS
-cap.set(cv2.CAP_PROP_FPS, 60)
+# Raspberry Pi 4 target configuration
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FPS, 30)
 
 
 # ==========================================
@@ -142,6 +140,7 @@ try:
             eye_state = result["eye_state"]
 
             if result["left_eye"] is not None:
+
                 left_eye = result["left_eye"]
 
                 x1, y1, x2, y2 = left_eye["box"]
@@ -178,6 +177,7 @@ try:
             # ----------------------------------
 
             if result["right_eye"] is not None:
+
                 right_eye = result["right_eye"]
 
                 x1, y1, x2, y2 = right_eye["box"]
