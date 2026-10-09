@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
-from inference.drowsiness_engine import DrowsinessEngine
+from src.inference.drowsiness_engine import DrowsinessEngine
 
 
 def make_engine():
