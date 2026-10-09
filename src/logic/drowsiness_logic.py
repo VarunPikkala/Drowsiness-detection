@@ -157,3 +157,16 @@ class DrowsinessLogic:
             "yawn_active":
                 self.yawn_active
         }
+
+    # ==========================================
+    # RESET ACTIVE TIMERS
+    # ==========================================
+
+    def reset_active_timers(self):
+        """Reset active timers when facial tracking is lost."""
+
+        self.eye_closed_start = None
+        self.eye_closure_duration = 0.0
+
+        self.yawn_start = None
+        self.yawn_active = False

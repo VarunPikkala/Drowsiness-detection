@@ -6,7 +6,7 @@ from ultralytics import YOLO
 # PROJECT PATHS
 # ==========================================
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 DATASET_PATH = (
     PROJECT_ROOT

@@ -96,13 +96,14 @@ class DrowsinessEngine:
         # ------------------------------------------
         # Check face
         # ------------------------------------------
-
         if (
             rois["left_eye"] is None
             or rois["right_eye"] is None
             or rois["mouth"] is None
         ):
+            self.logic.reset_active_timers()
             return output
+
 
         output["face_detected"] = True
 

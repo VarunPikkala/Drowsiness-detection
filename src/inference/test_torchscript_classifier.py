@@ -1,4 +1,5 @@
 from pathlib import Path
+import cv2
 
 from inference.torchscript_classifier import TorchScriptClassifier
 
@@ -23,8 +24,8 @@ eye_model = TorchScriptClassifier(
     ),
     class_names={
         0: "closed",
-        1: "open"
-    }
+        1: "open",
+    },
 )
 
 
@@ -41,46 +42,66 @@ yawn_model = TorchScriptClassifier(
     ),
     class_names={
         0: "no_yawn",
-        1: "yawn"
-    }
+        1: "yawn",
+    },
 )
 
 
 # ==========================================
-# TEST IMAGES
+# TEST IMAGE PATHS
 # ==========================================
 
-eye_image = (
+EYE_TEST_DIR = (
     PROJECT_ROOT
     / "data"
-    / "processed"
-    / "Test"
-    / "Open_Eyes"
+    / "binary_datasets"
+    / "eyes"
+    / "test"
+    / "open"
 )
 
-yawn_image = (
+YAWN_TEST_DIR = (
     PROJECT_ROOT
     / "data"
-    / "processed"
-    / "Test"
-    / "Yawn"
+    / "binary_datasets"
+    / "mouth"
+    / "test"
+    / "yawn"
 )
 
 
-# Pick first image from each folder
-eye_image = list(eye_image.glob("*"))[0]
-yawn_image = list(yawn_image.glob("*"))[0]
+# ==========================================
+# FIND TEST IMAGES
+# ==========================================
+
+eye_images = sorted(
+    path for path in EYE_TEST_DIR.iterdir()
+    if path.is_file()
+) if EYE_TEST_DIR.is_dir() else []
+
+yawn_images = sorted(
+    path for path in YAWN_TEST_DIR.iterdir()
+    if path.is_file()
+) if YAWN_TEST_DIR.is_dir() else []
+
+
+if not eye_images:
+    raise FileNotFoundError(
+        f"No eye test images found in: {EYE_TEST_DIR}"
+    )
+
+if not yawn_images:
+    raise FileNotFoundError(
+        f"No yawn test images found in: {YAWN_TEST_DIR}"
+    )
+
+
+eye_image = eye_images[0]
+yawn_image = yawn_images[0]
 
 
 # ==========================================
-# LOAD OPENCV
-# ==========================================
-
-import cv2
-
-
-# ==========================================
-# EYE TEST
+# EYE MODEL TEST
 # ==========================================
 
 print("\n" + "=" * 50)
@@ -89,19 +110,19 @@ print("=" * 50)
 
 image = cv2.imread(str(eye_image))
 
+if image is None:
+    raise ValueError(f"Could not load eye image: {eye_image}")
+
 result = eye_model.predict(image)
 
 print("Image:", eye_image.name)
 print("Prediction:", result["class"])
-print(
-    "Confidence:",
-    f"{result['confidence'] * 100:.2f}%"
-)
+print("Confidence:", f"{result['confidence'] * 100:.2f}%")
 print("Probabilities:", result["probabilities"])
 
 
 # ==========================================
-# YAWN TEST
+# YAWN MODEL TEST
 # ==========================================
 
 print("\n" + "=" * 50)
@@ -110,16 +131,20 @@ print("=" * 50)
 
 image = cv2.imread(str(yawn_image))
 
+if image is None:
+    raise ValueError(f"Could not load yawn image: {yawn_image}")
+
 result = yawn_model.predict(image)
 
 print("Image:", yawn_image.name)
 print("Prediction:", result["class"])
-print(
-    "Confidence:",
-    f"{result['confidence'] * 100:.2f}%"
-)
+print("Confidence:", f"{result['confidence'] * 100:.2f}%")
 print("Probabilities:", result["probabilities"])
 
+
+# ==========================================
+# COMPLETE
+# ==========================================
 
 print("\n" + "=" * 50)
 print("TEST COMPLETE")

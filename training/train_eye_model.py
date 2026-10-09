@@ -1,18 +1,21 @@
+
 from pathlib import Path
+import shutil
+
 from ultralytics import YOLO
 
 
 # ==========================================
-# PATHS
+# PROJECT PATHS
 # ==========================================
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 DATASET_PATH = (
     PROJECT_ROOT
     / "data"
     / "binary_datasets"
-    / "eyes"
+    / "mouth"
 )
 
 PRETRAINED_MODEL = (
@@ -22,29 +25,25 @@ PRETRAINED_MODEL = (
     / "yolo11n-cls.pt"
 )
 
+RUNS_OUTPUT = PROJECT_ROOT / "runs"
+
 MODEL_OUTPUT = (
     PROJECT_ROOT
     / "models"
     / "trained"
 )
 
-RUNS_OUTPUT = (
-    PROJECT_ROOT
-    / "runs"
-    / "eye_model_v1"
-)
-
 
 # ==========================================
-# CHECKS
+# CHECK PATHS
 # ==========================================
 
-if not DATASET_PATH.exists():
+if not DATASET_PATH.is_dir():
     raise FileNotFoundError(
         f"Dataset not found:\n{DATASET_PATH}"
     )
 
-if not PRETRAINED_MODEL.exists():
+if not PRETRAINED_MODEL.is_file():
     raise FileNotFoundError(
         f"Pretrained model not found:\n{PRETRAINED_MODEL}"
     )
@@ -59,7 +58,7 @@ MODEL_OUTPUT.mkdir(
 # LOAD MODEL
 # ==========================================
 
-print("Loading YOLO11 classification model...")
+print("Loading pretrained YOLO11 classification model...")
 
 model = YOLO(str(PRETRAINED_MODEL))
 
@@ -68,27 +67,19 @@ model = YOLO(str(PRETRAINED_MODEL))
 # TRAIN
 # ==========================================
 
-print("\nStarting eye model training...\n")
+print("\nStarting mouth/yawn model training...\n")
 
-results = model.train(
-
+model.train(
     data=str(DATASET_PATH),
-
     epochs=15,
-
     imgsz=224,
-
     batch=32,
-
     device="mps",
-
-    project=str(PROJECT_ROOT / "runs"),
-
-    name="eye_model_v1",
-
+    workers=0,
+    project=str(RUNS_OUTPUT),
+    name="mouth_model_v1",
     exist_ok=True,
-
-    pretrained=True
+    pretrained=True,
 )
 
 
@@ -97,38 +88,31 @@ results = model.train(
 # ==========================================
 
 best_model_path = (
-    PROJECT_ROOT
-    / "runs"
-    / "eye_model_v1"
+    RUNS_OUTPUT
+    / "mouth_model_v1"
     / "weights"
     / "best.pt"
 )
 
 target_model_path = (
     MODEL_OUTPUT
-    / "eye_model_v1.pt"
+    / "yawn_model_v1.pt"
 )
 
-
-if best_model_path.exists():
-
-    import shutil
-
-    shutil.copy2(
-        best_model_path,
-        target_model_path
+if not best_model_path.is_file():
+    raise FileNotFoundError(
+        "Training finished, but best.pt was not found:\n"
+        f"{best_model_path}"
     )
 
-    print("\nTraining complete!")
+shutil.copy2(
+    best_model_path,
+    target_model_path
+)
 
-    print(
-        f"\nBest model saved to:\n"
-        f"{target_model_path}"
-    )
+print("\n" + "=" * 50)
+print("MOUTH MODEL TRAINING COMPLETE")
+print("=" * 50)
 
-else:
-
-    print(
-        "\nTraining finished, "
-        "but best.pt was not found."
-    )
+print(f"Training checkpoint:\n{best_model_path}")
+print(f"\nTrained model saved to:\n{target_model_path}")
